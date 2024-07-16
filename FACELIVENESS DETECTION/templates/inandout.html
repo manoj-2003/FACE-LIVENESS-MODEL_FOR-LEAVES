@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Details</title>
+<style>
+/* Your existing CSS styles here */
+/* Added styles for alignment and color */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f2f2f2;
+  /*color: #333;*/ /* Dark gray font color */
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure full height of viewport */
+}
+
+#head {
+  height: 150px;
+  background-color: #254336; /* Dark background color */
+  color: white; /* White text color */
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+}
+
+#head h1 {
+  padding: 10px;
+  margin: 0; /* Remove default margin */
+  text-align: center; /* Center text */
+}
+
+#content {
+  flex: 1; /* Expand to fill remaining vertical space */
+  display: flex;
+  justify-content: center;
+  padding: 100px 0 150px ; /* Add vertical padding */
+
+}
+
+#studentDetails {
+  background-color: white; /* Background color for the form */
+  padding: 30px;
+  border: 2px solid #254336; /* Border color */
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 600px;
+  margin-bottom: 20px; /* Add space between form and footer */
+}
+
+form {
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.radio-group input[type="radio"] {
+  display: none; /* Hide the default radio buttons */
+}
+
+.radio-group label {
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.radio-group label:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #254336; /* Border color */
+  border-radius: 50%;
+}
+
+.radio-group input[type="radio"]:checked + label:before {
+  background-color: #254336; /* Color when checked */
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #254336;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #254336;
+}
+
+.btn1{
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #254336;
+  color: white;
+  font-size: 15px;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#footer {
+  background-color: #254336;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+/* Styling for the textarea */
+.textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  resize: vertical;
+  text-align: left; /* Ensure text aligns left within textarea */
+}
+.textarea:focus {
+  outline: none;
+  border-color: #254336;
+}
+</style>
+</head>
+<body>
+<div id="head">
+  <h1 >RAJIV GANDHI UNIVERSITY OF KNOWLEDGE TECHNOLOGIES</h1><br>
+  <h1>IIIT RGUKT NUZVID</h1>
+</div>
+<div id="content">
+  <div id="studentDetails">
+    <form id="statusForm" action="/security" method="POST">
+      <div class="form-group">
+        <h2>Select Student Status:</h2>
+        <div class="radio-group">
+          <input type="radio" id="leaving" name="status" value="1">
+          <label for="leaving">Leaving</label>
+        </div>
+        <div class="radio-group">
+          <input type="radio" id="entering" name="status" value="2">
+          <label for="entering">Entering</label>
+        </div>
+      </div>
+      <div id="reason-div" class="form-group" style="display: none;">
+        <label for="reason">Reason:</label>
+        <textarea id="reason" name="reason" class="textarea"></textarea>
+      </div>
+      <div class="form-group">
+        <input type="submit" value="Confirm" class="btn1">
+        <a href="/download_csv" download class="btn">Download details</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="footer">
+  <p>&copy; 2024 IIIT RGUKT Nuzvid. All rights reserved.</p>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+ 
+  const statusForm = document.getElementById('statusForm');
+  const reasonInput = document.getElementById('reason');
+  const outTimeInput = document.getElementById('Outtimestamp');
+  const inTimeInput = document.getElementById('Intimestamp');
+
+  statusForm.addEventListener('submit', (event) => {
+    const reason = reasonInput.value.trim();
+    const leavingRadio = document.getElementById('leaving');
+    const enteringRadio = document.getElementById('entering');
+
+    if (leavingRadio.checked && reason === "") {
+      alert("Reason is required for leaving.");
+      event.preventDefault();
+      return;
+    }
+
+    if (leavingRadio.checked) {
+      outTimeInput.value = new Date().toISOString(); // Update out-time
+    } else if (enteringRadio.checked) {
+      inTimeInput.value = new Date().toISOString(); // Update in-time
+    }
+
+    statusForm.submit(); // Submit the form
+  });
+
+  const reasonRadioLeaving = document.getElementById('leaving');
+  const reasonRadioEntering = document.getElementById('entering');
+  const reasonDiv = document.getElementById('reason-div');
+
+  reasonRadioLeaving.addEventListener('change', () => {
+    if (reasonRadioLeaving.checked) {
+      reasonDiv.style.display = 'block';
+      reasonInput.required = true;
+    } else {
+      reasonDiv.style.display = 'none';
+      reasonInput.required = false;
+    }
+  });
+
+  reasonRadioEntering.addEventListener('change', () => {
+    if (reasonRadioEntering.checked) {
+      reasonDiv.style.display = 'none';
+      reasonInput.required = false;
+    } else {
+      reasonDiv.style.display = 'block';
+      reasonInput.required = true;
+    }
+  });
+});
+</script>
+</body>
+</html>

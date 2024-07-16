@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outpass Management System</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            color: #000;
+            margin:0;
+        }
+
+        #container {
+            width: 100%;
+            
+            text-align: center;
+        }
+
+        #head {
+            height: 130px;
+              background-color: #254336; /* Dark background color */
+              color: white; /* White text color */
+              display: flex;
+
+              flex-direction: column; /* Stack items vertically */
+              justify-content: center; /* Center content horizontally */
+              align-items: center; /* Center content vertically */
+          }
+          #head h1 {
+            margin: 0; /* Remove default margin */
+            text-align: center; /* Center text */
+            padding:10px;
+ 
+        }
+
+        #footer {
+            background-color: #254336;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+          }
+
+        video {
+            border: 1px solid #0d0d0d;
+            border-radius: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="submit"], button {
+            background-color: #1ABC9C;
+            color: #ffffff;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: large;
+        }
+
+        input[type="submit"]:hover, button:hover {
+            background-color: #008cba;
+        }
+
+       
+
+        p {
+            color: white;
+        }
+
+        .text {
+          
+            width:100%;
+        }
+
+        .details {
+            color: red;
+            margin-top: 20px;
+        }
+
+        #reason-div {
+            margin-top: 20px;
+        }
+
+        #student-details {
+            margin-top: 20px;
+            color: black;
+        }
+
+        #student-details p {
+            margin: 5px 0;
+        }
+        .button-container {
+            
+        }
+        
+        .button-container a {
+            
+            text-decoration: none; /* Remove underline from anchor tags */
+        }
+        
+        .button-container button {
+            padding: 10px 20px; /* Adjust padding as needed */
+            background-color: #638889; /* Button background color */
+            color: #fff; /* Button text color */
+            border: none; /* Remove button border */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #254336; /* Darker background color on hover */
+        }
+        #capture-button {
+            background-color: #638889;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #capture-button:hover {
+            background-color: #254336;
+        }
+
+        .container {
+            display: flex;
+        }
+    
+        .section {
+            flex: 1; /* Each section takes equal space */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="head">
+            <h1 >RAJIV GANDHI UNIVERSITY OF KNOWLEDGE TECHNOLOGIES</h1><br>
+            <h1>IIIT RGUKT</h1>
+          </div>
+          <div class="container">
+            <div class="section">
+                <video id="video" width="480" height="380" autoplay></video>
+        <br>
+        <button id="capture-button">Identify</button>
+            </div>
+            <div class="section">
+               
+                <br>
+        
+                <div  class="button-container">
+                    <div id="student-details" style="display: none;">
+                        <h2>Student Details</h2>
+                        <p id="student-name"></p>
+                        <p id="student-year"></p>
+                        <p id="student-branch"></p>
+                        <p id="student-id"></p>
+                    </div>
+                    <a href="{{ url_for('index') }}"><button>Back to Home</button></a><br><br>
+                    <a href="{{ url_for('student_details_page', student_id='STUDENT_ID') }}"><button>In and Out</button></a>
+                </div>
+            </div>
+        </div>
+        
+
+        
+        <div id="footer">
+            <p>&copy; 2024 IIIT RGUKT Nuzvid. All rights reserved.</p>
+          </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureButton = document.getElementById('capture-button');
+        const studentDetailsDiv = document.getElementById('student-details');
+        const studentName = document.getElementById('student-name');
+        const studentYear = document.getElementById('student-year');
+        const studentBranch = document.getElementById('student-branch');
+        const studentId = document.getElementById('student-id');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((err) => {
+                console.error('Error accessing webcam: ' + err);
+            });
+
+        captureButton.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            const base64Image = dataUrl.split(',')[1];
+
+            fetch('/process_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: base64Image }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const student = data[0];
+                    if (student.result === 'FAKE') {
+                        alert('Spoof detected! Please try again.');
+                        studentDetailsDiv.style.display = 'none';
+                    } else if (student.result === 'REAL') {
+                        studentName.textContent = Name: ${student.name};
+                        studentYear.textContent = Year: ${student.year};
+                        studentBranch.textContent = Branch: ${student.branch};
+                        studentId.textContent = ID: ${student.id};
+                        studentDetailsDiv.style.display = 'block';
+                        alert(student.message); // Show success or error message
+                    } else {
+                        alert('Face not recognized or not found in the database.');
+                        studentDetailsDiv.style.display = 'none';
+                    }
+                } else {
+                    alert('Face not recognized or not found in the database.');
+                    studentDetailsDiv.style.display = 'none';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<!--<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outpass Management System</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            color: #000;
+            margin:0;
+        }
+
+        #container {
+            width: 100%;
+            
+            text-align: center;
+            height:100px;
+        }
+
+        #head {
+            height: 130px;
+              background-color: #254336; /* Dark background color */
+              color: white; /* White text color */
+              display: flex;
+
+              flex-direction: column; /* Stack items vertically */
+              justify-content: center; /* Center content horizontally */
+              align-items: center; /* Center content vertically */
+          }
+          #head h1 {
+            margin: 0; /* Remove default margin */
+            text-align: center; /* Center text */
+            padding:10px;
+ 
+        }
+
+        #footer {
+            background-color: #254336;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+          }
+
+        video {
+            border: 1px solid #0d0d0d;
+            border-radius: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="submit"], button {
+            background-color: #1ABC9C;
+            color: #ffffff;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: large;
+        }
+
+        input[type="submit"]:hover, button:hover {
+            background-color: #008cba;
+        }
+
+       
+
+        p {
+            color: red;
+        }
+
+        .text {
+          
+            width:100%;
+        }
+
+        .details {
+            color: red;
+            margin-top: 20px;
+        }
+
+        #reason-div {
+            margin-top: 20px;
+        }
+
+        #student-details {
+            margin-top: 20px;
+            color: black;
+        }
+
+        #student-details p {
+            margin: 5px 0;
+        }
+        .button-container {
+            display: flex;
+            text-align:center;
+            justify-content:center;
+            
+            gap: 10px; /* Adjust the gap between buttons as needed */
+        }
+        
+        .button-container a {
+            
+            text-decoration: none; /* Remove underline from anchor tags */
+        }
+        
+        .button-container button {
+            padding: 10px 20px; /* Adjust padding as needed */
+            background-color: #638889; /* Button background color */
+            color: #fff; /* Button text color */
+            border: none; /* Remove button border */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #254336; /* Darker background color on hover */
+        }
+        #capture-button {
+            background-color: #638889;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #capture-button:hover {
+            background-color: #254336;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="head">
+            <h1 >RAJIV GANDHI UNIVERSITY OF KNOWLEDGE TECHNOLOGIES</h1><br>
+            <h1>IIIT RGUKT</h1>
+          </div>
+
+        <video id="video" width="380" height="280" autoplay></video>
+        <br>
+
+        <button id="capture-button">Identify</button><br>
+
+        <div id="student-details" style="display: none;">
+            <h2>Student Details</h2>
+            <p id="student-name"></p>
+            <p id="student-year"></p>
+            <p id="student-branch"></p>
+            <p id="student-id"></p>
+        </div>
+        <br>
+
+        <div  class="button-container">
+            <a href="{{ url_for('index') }}"><button>Back to Home</button></a>
+            <a href="{{ url_for('student_details_page', student_id='STUDENT_ID') }}"><button>In and Out</button></a>
+        </div>
+        <div id="footer">
+            <p>&copy; 2024 IIIT RGUKT Nuzvid. All rights reserved.</p>
+          </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureButton = document.getElementById('capture-button');
+        const studentDetailsDiv = document.getElementById('student-details');
+        const studentName = document.getElementById('student-name');
+        const studentYear = document.getElementById('student-year');
+        const studentBranch = document.getElementById('student-branch');
+        const studentId = document.getElementById('student-id');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((err) => {
+                console.error('Error accessing webcam: ' + err);
+            });
+
+        captureButton.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            const base64Image = dataUrl.split(',')[1];
+
+            fetch('/process_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: base64Image }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const student = data[0];
+                    if (student.result === 'FAKE') {
+                        alert('Spoof detected! Please try again.');
+                        studentDetailsDiv.style.display = 'none';
+                    } else if (student.result === 'REAL') {
+                        studentName.textContent = `Name: ${student.name}`;
+                        studentYear.textContent = `Year: ${student.year}`;
+                        studentBranch.textContent = `Branch: ${student.branch}`;
+                        studentId.textContent = `ID: ${student.id}`;
+                        studentDetailsDiv.style.display = 'block';
+                        alert(student.message); // Show success or error message
+                    } else {
+                        alert('Face not recognized or not found in the database.');
+                        studentDetailsDiv.style.display = 'none';
+                    }
+                } else {
+                    alert('Face not recognized or not found in the database.');
+                    studentDetailsDiv.style.display = 'none';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>-->
+
